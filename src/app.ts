@@ -1,15 +1,13 @@
 import express from 'express';
-import rateLimit from 'express-rate-limit';
 import { globalErrorHandler } from './middlewares/errorHandler';
 import mongoose from 'mongoose';
 import DOT_ENV from './config-env';
 import rateLimiter from './middlewares/rateLimiter';
+import Routes from './modules/index';
 
 
 export class App {
     public app: express.Application;
-    public port: string | number;
-
 
     constructor() {
         this.app = express();
@@ -35,7 +33,7 @@ export class App {
     }
 
     private initializeRoutes() {
-
+        this.app.use(Routes);
     }
 
     private initializeErrorHandling() {
