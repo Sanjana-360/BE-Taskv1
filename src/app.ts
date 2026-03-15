@@ -1,10 +1,16 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { globalErrorHandler } from './middlewares/errorHandler';
+import mongoose from 'mongoose';
+import DOT_ENV from './config-env';
+import rateLimiter from './middlewares/rateLimiter';
 
 
 export class App {
     public app: express.Application;
+    public port: string | number;
+
+
     constructor() {
         this.app = express();
         this.initializeMiddlewares();
@@ -25,7 +31,7 @@ export class App {
                 parameterLimit: 20000,
             }),
         );
-        this.app.use(rateLimit);
+        this.app.use(rateLimiter);
     }
 
     private initializeRoutes() {
@@ -34,5 +40,25 @@ export class App {
 
     private initializeErrorHandling() {
         this.app.use(globalErrorHandler);
+    }
+    public listen() {
+        this.app.listen(DOT_ENV.PORT, () => {
+            console.log(`App is listening on port ${DOT_ENV.PORT}`)
+            this.databaseConnection();
+        });
+
+    }
+
+
+    public databaseConnection() {
+
+        mongoose
+            .connect(DOT_ENV.DATABASE_URL)
+            .then(() => {
+                console.log('Connected to the database');
+            })
+            .catch((error) => {
+                console.error('Error connecting to the database:', error);
+            });
     }
 }
