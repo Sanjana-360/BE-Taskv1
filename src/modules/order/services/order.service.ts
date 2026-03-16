@@ -1,31 +1,33 @@
 import { AppError } from '../../../middlewares/errorHandler';
 import orderRepository from '../repository/order.repository'
-// import { s3Upload } from '../../../s3Service';
-const validateProducts = (products: any) => {
-    try {
-        if (!products || products.length === 0) {
-            throw new Error()
-        }
+import { s3Upload } from '../../../s3Service';
 
-        for (let product of products) {
-            if (!product.name) {
-                throw new AppError(404, '')
-            }
-            if (!product.price) {
-                throw new AppError(404, '')
-            }
-            if (!product.qty) {
-                throw new AppError(404, '')
-            }
-        }
-    } catch (error) {
-        throw new AppError(404, '')
+// validation of products , if present 
+// for every product 
+// check name , price and qty
+const validateProducts = (products: any) => {
+    if (!products || products.length === 0) {
+        throw new Error()
     }
 
+    for (let product of products) {
+        if (!product.name) {
+            throw new AppError(404, '')
+        }
+        if (!product.price) {
+            throw new AppError(404, '')
+        }
+        if (!product.qty) {
+            throw new AppError(404, '')
+        }
+    }
 }
 
 
-const validateOrder = (orderDetails: any, products: any[], estimateAmount: number) => {
+// validate orders
+// check for estimateAmount, expectedDeliveryDate 
+// [omsOrderId, products are already validated]
+const validateOrder = (orderDetails: any, products: any[], estimateAmount: number, poFile: any) => {
 
 
     if (!orderDetails.estimateAmount || orderDetails.estimateAmount == '' || orderDetails.estimateAmount < 1) throw new AppError(400, 'estimateAmount is required')
@@ -36,44 +38,46 @@ const validateOrder = (orderDetails: any, products: any[], estimateAmount: numbe
     if (estimateAmount !== totalAmount) {
         throw new AppError(400, 'estimateAmount does not match total price of products')
     }
-    if (!orderDetails.expectedDeliveryDate) throw new AppError(400, 'expectedDeliveryDate is required')
+    if (!orderDetails.expectedDeliveryDate || orderDetails.expectedDeliveryDate == '') {
+        throw new AppError(400, 'expectedDeliveryDate is required')
+    }
+    if (!poFile) throw new AppError(400, 'poFile is required')
 }
 
-
+// flow ->
+// 1. destruct orderdetails
+// 2. parse products
+// 3. parse estimateAmount
+// 4. validate Products
+// 5. validate Order
+// 6. Upload poFile in s3
+// 7. Upload indDeliveryFile in s3
 const createOrder = async (orderWithFiles) => {
-    try {
-        const { orderDetails, poFile, indDeliveryFile } = orderWithFiles;
-        const products = JSON.parse(orderDetails.products)
-        const estimateAmount = Number(orderDetails.estimateAmount)
-        validateProducts(products)
-        validateOrder(orderDetails, products, estimateAmount);
-        const fileExtension = poFile[0].mimetype.split('/')[1]
-        const poFileKey = `order/poFiles/po_${orderDetails.omsOrderId}.${fileExtension}`
-        // const poFileUrl = await s3Upload(poFileKey, poFile[0].buffer)
 
-        let indDeliveryFileUrl = null
-        if (indDeliveryFile) {
-            const ext = indDeliveryFile[0].mimetype.split('/')[1]
-            const indKey = `order/indDelivery/ind_${orderDetails.omsOrderId}.${ext}`
-            // indDeliveryFileUrl = await s3Upload(indKey, indDeliveryFile[0].buffer)
-        }
-        const order = await orderRepository.addOrder(
-            {
-                // ...orderDetails, products, estimateAmount, poFile: poFileUrl, indDeliveryFile: indDeliveryFileUrl
-            }
+    const { orderDetails, poFile, indDeliveryFile } = orderWithFiles;
+    const products = JSON.parse(orderDetails.products)
+    const estimateAmount = Number(orderDetails.estimateAmount)
+    validateProducts(products)
+    validateOrder(orderDetails, products, estimateAmount, poFile);
 
-        );
+    const fileExtension = poFile[0].mimetype.split('/')[1]
+    const poFileKey = `order/poFiles/po_${Date.now()}.${fileExtension}`
+    const poFileUrl = await s3Upload(poFileKey, poFile[0].buffer)
 
-        return order
-
-
-    } catch (error) {
-        throw new AppError(400, 'Bad Request');
+    let indDeliveryFileUrl = null
+    if (indDeliveryFile) {
+        const fileExtension = indDeliveryFile[0].mimetype.split('/')[1]
+        const indKey = `order/indDelivery/ind_${Date.now()}.${fileExtension}`
+        indDeliveryFileUrl = await s3Upload(indKey, indDeliveryFile[0].buffer)
     }
+    const order = await orderRepository.addOrder(
+        {
+            ...orderDetails, products, estimateAmount, poFile: poFileUrl, indDeliveryFile: indDeliveryFileUrl
+        }
 
+    );
 
-
-
+    return order
 }
 
 const getOrders = async (orderDetails) => {

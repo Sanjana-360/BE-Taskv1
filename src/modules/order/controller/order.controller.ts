@@ -28,7 +28,5 @@ const getOrders = async (req: Request, res: Response, next: NextFunction) => {
 export default { createOrder, getOrders }
 
 
-// AWS S3 upload requirement 
-// 
 
 

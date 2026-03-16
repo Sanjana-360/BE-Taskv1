@@ -36,7 +36,7 @@ const orderSchema = new mongoose.Schema({
     products: [productSchema],
     expectedDeliveryDate: {
         type: Date,
-        default: Date.now
+        default: null
     },
     indDeliveryFile: {
         type: String,
