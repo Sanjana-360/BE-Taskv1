@@ -6,10 +6,10 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
     try {
         const orderDetails = req.body;
         const poFile = req.files['poFile'];
-        const insDeliveryFile = req.files['insDeliveryFile'];
+        const indDeliveryFile = req.files['indDeliveryFile'];
         const orderWithFiles = {
             poFile,
-            insDeliveryFile,
+            indDeliveryFile,
             orderDetails
         };
 
@@ -27,5 +27,8 @@ const getOrders = async (req: Request, res: Response, next: NextFunction) => {
 
 export default { createOrder, getOrders }
 
+
+// AWS S3 upload requirement 
+// 
 
 

@@ -15,6 +15,9 @@ const productSchema = new mongoose.Schema({
     }
 });
 
+
+
+
 const orderSchema = new mongoose.Schema({
     omsOrderId: {
         type: String,
@@ -35,10 +38,19 @@ const orderSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    insDeliveryFile: {
+    indDeliveryFile: {
         type: String,
         default: ''
     }
 }, { timestamps: true });
 
-export default orderSchema;
+
+orderSchema.pre('save', function () {
+    if (!this.omsOrderId) {
+        this.omsOrderId = `OMS-${Date.now()}`
+    }
+})
+const Order = mongoose.model('Order', orderSchema);
+
+
+export default Order;
