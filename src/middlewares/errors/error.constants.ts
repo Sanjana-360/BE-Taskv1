@@ -12,3 +12,4 @@ export const ERROR_CODES = {
     NOT_ACCEPTABLE: 'NOT_ACCEPTABLE',
 
 };
+

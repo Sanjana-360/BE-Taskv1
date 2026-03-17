@@ -1,5 +1,5 @@
 import express from 'express';
-import { globalErrorHandler } from './middlewares/errorHandler';
+import { globalErrorHandler } from './middlewares/errors/global.error.handler';
 import mongoose from 'mongoose';
 import DOT_ENV from './config-env';
 import rateLimiter from './middlewares/rateLimiter';

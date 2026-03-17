@@ -8,7 +8,8 @@ const addOrder = async (orderData: any) => {
 
 const getOrders = async (query) => {
 
-    return await Order.find(query);
+    const orders = await Order.find(query);
+    return orders;
 }
 
 export default { addOrder, getOrders }

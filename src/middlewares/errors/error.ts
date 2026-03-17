@@ -34,19 +34,15 @@ export class AppError extends Error {
 
 export const handleGeneralError = (error: any) => {
     if (error instanceof SyntaxError) {
-        // Handling JSON parse errors, etc.
         throw new AppError(ERROR_CODES.BAD_REQUEST, 'Syntax error in request');
     } else if (error.code === 'ENOTFOUND') {
-        // Handling network errors
         throw new AppError(
             ERROR_CODES.SERVICE_UNAVAILABLE,
             'Network error, service not found',
         );
     } else if (error.code === 'ECONNREFUSED') {
-        // Handling connection refused errors
         throw new AppError(ERROR_CODES.SERVICE_UNAVAILABLE, 'Connection refused');
     } else {
-        // General unexpected errors
         throw new AppError(
             ERROR_CODES.INTERNAL_SERVER_ERROR,
             'Unexpected application error',
