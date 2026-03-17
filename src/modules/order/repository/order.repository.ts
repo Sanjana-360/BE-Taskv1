@@ -6,9 +6,9 @@ const addOrder = async (orderData: any) => {
     return savedOrder
 }
 
-const getOrders = async (omsOrderId?: string) => {
-    const query = omsOrderId ? { omsOrderId } : {}
-    return await Order.find(query)
+const getOrders = async (query) => {
+
+    return await Order.find(query);
 }
 
 export default { addOrder, getOrders }

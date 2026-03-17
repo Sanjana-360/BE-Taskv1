@@ -23,6 +23,18 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
 
 const getOrders = async (req: Request, res: Response, next: NextFunction) => {
 
+
+    try {
+        const omsOrderId = req.query.omsOrderId as string;
+        const orders = await orderService.getOrders(omsOrderId);
+        res.status(200).json({
+            data: orders,
+            success: true
+        })
+    } catch (error) {
+        next(error);
+    }
+
 }
 
 export default { createOrder, getOrders }

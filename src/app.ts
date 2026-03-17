@@ -3,8 +3,9 @@ import { globalErrorHandler } from './middlewares/errorHandler';
 import mongoose from 'mongoose';
 import DOT_ENV from './config-env';
 import rateLimiter from './middlewares/rateLimiter';
-import Routes from './modules/index';
 
+import morgan from 'morgan'
+import Routes from './modules/index'
 
 export class App {
     public app: express.Application;
@@ -30,6 +31,7 @@ export class App {
             }),
         );
         this.app.use(rateLimiter);
+        this.app.use(morgan('dev'));
     }
 
     private initializeRoutes() {

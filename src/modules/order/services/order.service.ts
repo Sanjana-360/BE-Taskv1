@@ -55,20 +55,23 @@ const validateOrder = (orderDetails: any, products: any[], estimateAmount: numbe
 const createOrder = async (orderWithFiles) => {
 
     const { orderDetails, poFile, indDeliveryFile } = orderWithFiles;
+    console.log(orderWithFiles);
     const products = JSON.parse(orderDetails.products)
+    console.log(products);
     const estimateAmount = Number(orderDetails.estimateAmount)
     validateProducts(products)
     validateOrder(orderDetails, products, estimateAmount, poFile);
 
     const fileExtension = poFile[0].mimetype.split('/')[1]
-    const poFileKey = `order/poFiles/po_${Date.now()}.${fileExtension}`
+    const poFileKey = `sanjana/order/poFiles/po_${Date.now()}.${fileExtension}`
     const poFileUrl = await s3Upload(poFileKey, poFile[0].buffer)
 
-    let indDeliveryFileUrl = null
-    if (indDeliveryFile) {
-        const fileExtension = indDeliveryFile[0].mimetype.split('/')[1]
-        const indKey = `order/indDelivery/ind_${Date.now()}.${fileExtension}`
-        indDeliveryFileUrl = await s3Upload(indKey, indDeliveryFile[0].buffer)
+    let indDeliveryFileUrl = null;
+
+    if (indDeliveryFile && indDeliveryFile[0]) {
+        const fileExtension = indDeliveryFile[0].mimetype.split('/')[1];
+        const indKey = `sanjana/order/indDelivery/ind_${Date.now()}.${fileExtension}`;
+        indDeliveryFileUrl = await s3Upload(indKey, indDeliveryFile[0].buffer);
     }
     const order = await orderRepository.addOrder(
         {
@@ -77,10 +80,19 @@ const createOrder = async (orderWithFiles) => {
 
     );
 
+
     return order
 }
 
-const getOrders = async (orderDetails) => {
+const getOrders = async (omsOrderId?: string) => {
+
+    const query = omsOrderId;
+    const orders = await orderRepository.getOrders(query);
+    if (omsOrderId && (!orders && orders.length === 0)) {
+        throw new AppError(404, 'No order found with provided omsOrderId');
+    }
+
+    return orders;
 
 }
 
