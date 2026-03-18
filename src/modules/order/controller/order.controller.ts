@@ -29,10 +29,11 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
             throw new AppError(ERROR_CODES.BAD_REQUEST, error.errors[0].message);
         } else {
             if (error instanceof AppError) {
-                throw error;
+                next(error);
             }
-            handleGeneralError(error);
+            next(handleGeneralError(error));
         }
+        next(error);
     }
 }
 
@@ -61,6 +62,7 @@ const getOrders = async (req: Request, res: Response, next: NextFunction) => {
             }
             handleGeneralError(error);
         }
+        next(error);
     }
 
 }

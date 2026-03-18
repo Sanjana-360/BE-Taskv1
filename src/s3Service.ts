@@ -58,7 +58,8 @@ const s3Upload = async (Key: string, fileBuffer: Buffer): Promise<string> => {
         }
     }
     catch (error) {
-        throw new Error(`S3 upload failed: ${error.message}`)
+        throw error
+
     }
 }
 export { s3Upload }

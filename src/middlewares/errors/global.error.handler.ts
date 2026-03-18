@@ -6,7 +6,6 @@ export const globalErrorHandler = (
     res: Response,
     next: NextFunction
 ) => {
-
     const statusCode = error.status || error.statusCode || 500;
     const errorDetail = error.errorList || error.message || 'Internal Server Error';
     console.error(`Error at ${req.method} ${req.path}:`, errorDetail);

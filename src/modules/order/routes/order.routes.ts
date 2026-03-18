@@ -7,7 +7,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 router.post('/', upload.fields([
-    { name: 'poFiles', maxCount: 1 },
+    { name: 'poFiles', maxCount: 5 },
     { name: 'indDeliveryFile', maxCount: 1 }
 ]), orderController.createOrder)
 

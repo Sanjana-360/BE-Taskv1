@@ -48,7 +48,7 @@ const validateOrder = (orderDetails: any, products: any[], estimateAmount: numbe
     if (!orderDetails.expectedDeliveryDate || orderDetails.expectedDeliveryDate == '') {
         throw new AppError(ERROR_CODES.BAD_REQUEST, 'expectedDeliveryDate is required')
     }
-    // if (!poFiles || poFiles.length <= 0) throw new AppError(ERROR_CODES.BAD_REQUEST, OrderErrors.PO_FILE_REQUIRED)
+    if (!poFiles || poFiles.length <= 0) throw new AppError(ERROR_CODES.BAD_REQUEST, OrderErrors.PO_FILE_REQUIRED)
 }
 
 // flow ->
@@ -62,18 +62,17 @@ const validateOrder = (orderDetails: any, products: any[], estimateAmount: numbe
 const createOrder = async (orderWithFiles) => {
 
     const { orderDetails, poFiles, indDeliveryFile } = orderWithFiles;
-    console.log(orderWithFiles);
+
     const products = JSON.parse(orderDetails.products)
-    console.log('parsed products:', JSON.stringify(products, null, 2))
     const estimateAmount = Number(orderDetails.estimateAmount)
     const expectedDeliveryDate = new Date(orderDetails.expectedDeliveryDate);
     validateProducts(products)
     validateOrder(orderDetails, products, estimateAmount, poFiles);
-    const uniqueId = uuidv4();
 
     const poFileUrls = [];
 
     for (const poFile of (poFiles || [])) {
+        const uniqueId = uuidv4();
         const fileExtension = poFile.mimetype.split('/')[1]
 
         if (!fileExtension) {
@@ -81,6 +80,7 @@ const createOrder = async (orderWithFiles) => {
         }
         const key = `sanjana/order/poFiles/po_${Date.now()}_${uniqueId}.${fileExtension}`
         const poFileUrl = await s3Upload(key, poFile.buffer)
+
         poFileUrls.push(poFileUrl)
     }
 
@@ -105,12 +105,14 @@ const createOrder = async (orderWithFiles) => {
 
 const getOrders = async (omsOrderId?: string) => {
 
-    const filter = omsOrderId ? { omsOrderId: omsOrderId } : {};
+
+    const filter = omsOrderId
+        ? { omsOrderId: { $regex: `^${omsOrderId}`, $options: 'i' } }
+        : {};
     const orders = await orderRepository.getOrders(filter);
     if (omsOrderId && (!orders && orders.length === 0)) {
         throw new AppError(ERROR_CODES.REQUEST_DID_NOT_MATCH, OrderErrors.NOT_FOUND);
     }
-    console.log(OrderMessages.FETCHED)
     return orders;
 
 }
