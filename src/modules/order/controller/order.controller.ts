@@ -15,10 +15,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
         };
 
         const order = await orderService.createOrder(orderWithFiles);
-        res.status(201).send({
-            data: order,
-            message: OrderMessages.CREATED
-        });
+        res.status(201).send(order);
     } catch (error) {
         console.error(error);
         if (
