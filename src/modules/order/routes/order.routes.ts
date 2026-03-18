@@ -4,10 +4,10 @@ import multer from 'multer'
 
 const router = Router()
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
 router.post('/', upload.fields([
-    { name: 'poFile', maxCount: 1 },
+    { name: 'poFiles', maxCount: 1 },
     { name: 'indDeliveryFile', maxCount: 1 }
 ]), orderController.createOrder)
 

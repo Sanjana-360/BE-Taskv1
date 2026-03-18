@@ -2,19 +2,23 @@ import orderService from '../services/order.service'
 import { NextFunction, Request, Response } from 'express';
 import { AppError, handleGeneralError } from '../../../middlewares/errors/error';
 import { ERROR_CODES } from '../../../middlewares/errors/error.constants'
+import { OrderMessages } from '../constants/order.constants';
 export const createOrder = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const orderDetails = req.body;
-        const poFile = req.files['poFile'];
+        const poFiles = req.files['poFiles'];
         const indDeliveryFile = req.files['indDeliveryFile'];
         const orderWithFiles = {
-            poFile,
-            indDeliveryFile,
-            orderDetails
+            orderDetails,
+            poFiles,
+            indDeliveryFile
         };
 
         const order = await orderService.createOrder(orderWithFiles);
-        res.status(201).send(order);
+        res.status(201).send({
+            data: order,
+            message: OrderMessages.CREATED
+        });
     } catch (error) {
         console.error(error);
         if (

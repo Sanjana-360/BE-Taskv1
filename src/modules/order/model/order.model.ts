@@ -21,7 +21,6 @@ const productSchema = new mongoose.Schema({
 const orderSchema = new mongoose.Schema({
     omsOrderId: {
         type: String,
-        required: [true, "OmsOrderId is required"],
         unique: true
     },
     estimateAmount: {
@@ -29,8 +28,9 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: 0
     },
-    poFile: {
-        type: String,
+
+    poFiles: {
+        type: [String],
         required: [true, "PoFile is required"]
     },
     products: [productSchema],
@@ -45,7 +45,7 @@ const orderSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 
-orderSchema.pre('save', function () {
+orderSchema.pre('save', async function () {
     if (!this.omsOrderId) {
         this.omsOrderId = `OMS-${Date.now()}`
     }

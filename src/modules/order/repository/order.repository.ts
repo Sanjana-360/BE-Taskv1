@@ -6,9 +6,9 @@ const addOrder = async (orderData: any) => {
     return savedOrder
 }
 
-const getOrders = async (query) => {
+const getOrders = async (filter) => {
 
-    const orders = await Order.find(query);
+    const orders = await Order.find(filter);
     return orders;
 }
 

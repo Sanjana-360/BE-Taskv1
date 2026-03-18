@@ -1,6 +1,8 @@
 import DOT_ENV from './config-env'
 import * as AWS from 'aws-sdk'
 import mime from 'mime-types'
+import { ERROR_CODES } from './middlewares/errors/error.constants';
+import { AppError } from './middlewares/errors/error'
 
 
 AWS.config.update({
@@ -9,6 +11,7 @@ AWS.config.update({
     region: DOT_ENV.AWS_REGION
 });
 
+// CDN for QA and DEV
 const shouldUseCDN = (): boolean => {
     const prefix = DOT_ENV.AWS_BUCKET_FOLDER_PREFIX;
     return (
@@ -17,28 +20,26 @@ const shouldUseCDN = (): boolean => {
 };
 
 
-const s3Upload = async (fileName: string, fileBuffer: Buffer): Promise<string> => {
+const s3Upload = async (Key: string, fileBuffer: Buffer): Promise<string> => {
 
 
     try {
-        console.log('DOT_ENV.AWS_S3_BUCKET_NAME: ', DOT_ENV.AWS_BUCKET_NAME);
-        console.log(
-            'DOT_ENV.AWS_BUCKET_FOLDER_PREFIX: ',
-            DOT_ENV.AWS_BUCKET_FOLDER_PREFIX,
-        );
         const useCDN = shouldUseCDN();
         const bucketPrefix = useCDN
             ? DOT_ENV.AWS_BUCKET_FOLDER_PREFIX.replace(/\/+$/, '') + '/'
             : '';
 
-        const s3Key = bucketPrefix + fileName;
+        const s3Key = bucketPrefix + Key;
 
         if (!Buffer.isBuffer(fileBuffer)) {
-            throw new Error('Invalid file buffer. Expected a Buffer object.');
+            throw new AppError(ERROR_CODES.INTERNAL_SERVER_ERROR, 'Invalid file buffer. Expected a Buffer object.');
         }
 
         const s3 = new AWS.S3();
-        const fileType = mime.lookup(fileName) || ""
+        const fileType = mime.lookup(Key)
+        if (!fileType) {
+            throw new AppError(ERROR_CODES.INTERNAL_SERVER_ERROR, `Could not determine file type for key: ${Key}`)
+        }
 
         const params: AWS.S3.PutObjectRequest = {
             Bucket: DOT_ENV.AWS_BUCKET_NAME,
@@ -49,10 +50,10 @@ const s3Upload = async (fileName: string, fileBuffer: Buffer): Promise<string> =
 
         const uploadResponse = await s3.upload(params).promise();
         if (useCDN) {
-            // QA environment - return path without bucket prefix for CDN routing
+            // QA environment
             return s3Key.replace(bucketPrefix, '');
         } else {
-            // PROD environment - return full S3 URL
+            // PROD environment 
             return uploadResponse.Location;
         }
     }
