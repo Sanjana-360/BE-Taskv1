@@ -1,10 +1,9 @@
 import { AppError } from '../../../middlewares/errors/error';
 import orderRepository from '../repository/order.repository'
-import { s3Upload } from '../../../s3Service';
+import { s3Upload } from '../../../awsS3.service';
 import { ERROR_CODES } from '../../../middlewares/errors/error.constants';
-import { OrderErrors, OrderMessages } from '../constants/order.constants';
+import { OrderErrors } from '../constants/order.constants';
 import { v4 as uuidv4 } from 'uuid';
-
 
 // validation of products , if present 
 // for every product 
@@ -98,6 +97,8 @@ const createOrder = async (orderWithFiles) => {
         }
 
     );
+
+
 
 
     return order

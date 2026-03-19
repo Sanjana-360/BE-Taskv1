@@ -54,11 +54,11 @@ export const orderConfirmedEmailTemplate = (data) => {
             <h3>New Order Placed - ${omsOrderId}</h3>
             <p>A new order has been placed in the system.</p>
             
-           
+           <hr>
             <p><strong>OMS Order ID:</strong> ${omsOrderId}</p>
-            <p><strong>Estimate Amount:</strong> ₹${estimateAmount}</p>
-            <p><strong>Expected Delivery Date:</strong> ${expectedDeliveryDate}</p>
-            
+            <p>Estimate Amount: ₹${estimateAmount}</p>
+            <p>Expected Delivery Date: ${expectedDeliveryDate}</p>
+            <hr>
 
             <hr>
             <h4>Products:</h4>
