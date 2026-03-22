@@ -1,8 +1,8 @@
-import DOT_ENV from './config-env'
+import DOT_ENV from '../config-env'
 import * as AWS from 'aws-sdk'
 import mime from 'mime-types'
-import { ERROR_CODES } from './middlewares/errors/error.constants';
-import { AppError } from './middlewares/errors/error'
+import { ERROR_CODES } from '../middlewares/errors/error.constants';
+import { AppError } from '../middlewares/errors/error'
 
 
 AWS.config.update({

@@ -11,3 +11,9 @@ export const OrderMessages = {
     CREATED: 'Order created successfully',
     FETCHED: 'Orders fetched successfully',
 }
+
+export const generalConstants = {
+
+    limit: 3,
+    offset: 3
+}

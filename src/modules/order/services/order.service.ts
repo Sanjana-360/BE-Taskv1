@@ -1,9 +1,14 @@
 import { AppError } from '../../../middlewares/errors/error';
 import orderRepository from '../repository/order.repository'
-import { s3Upload } from '../../../awsS3.service';
+import { s3Upload } from '../../../services/awsS3.service';
 import { ERROR_CODES } from '../../../middlewares/errors/error.constants';
 import { OrderErrors } from '../constants/order.constants';
 import { v4 as uuidv4 } from 'uuid';
+import { IST_conversion } from '../../../utils/Date/date.conversion';
+import { sendEmail } from '../../../services/sendEmail.service';
+import { orderConfirmedEmailTemplate } from '../../../utils/templates/order-confirmed-client-template';
+import DOT_ENV from '../../../config-env';
+import { skip } from 'node:test';
 
 // validation of products , if present 
 // for every product 
@@ -91,29 +96,66 @@ const createOrder = async (orderWithFiles) => {
         const indKey = `sanjana/order/indDelivery/ind_${Date.now()}.${fileExtension}`;
         indDeliveryFileUrl = await s3Upload(indKey, indDeliveryFile[0].buffer);
     }
-    const order = await orderRepository.addOrder(
+    const savedOrder = await orderRepository.addOrder(
         {
             ...orderDetails, products, estimateAmount, expectedDeliveryDate, poFiles: poFileUrls, indDeliveryFile: indDeliveryFileUrl
         }
 
     );
+    const placedDate = IST_conversion(savedOrder.createdAt);
+    const expectedeliveryDate = IST_conversion(savedOrder.expectedDeliveryDate);
+
+    if (placedDate > expectedeliveryDate) {
+        throw new AppError(ERROR_CODES.BAD_REQUEST, 'Expected Delivery Date cannot be in the past')
+    }
 
 
 
 
-    return order
+    const ccPersons = ["chinmaysabnis.360tech@gmail.com", "sanjana.360tech+operationExecutive@gmail.com", "sanjana.360tech+purchaseExecutive@gmail.com"]
+    const senderEmail = "sanjana.360tech@gmail.com"
+    const senderPassword = DOT_ENV.SENDERPASSWORD
+    const receiverEmail = "sanjana.360tech+admin@gmail.com"
+    const mailBody = {
+        from: senderEmail,
+        to: receiverEmail,
+        subject: `New Order Placed - ${savedOrder.omsOrderId}`,
+        content: orderConfirmedEmailTemplate({
+            omsOrderId: savedOrder.omsOrderId,
+            estimateAmount: savedOrder.estimateAmount,
+            expectedDeliveryDate: expectedeliveryDate,
+            createdAt: placedDate,
+            products: savedOrder.products
+        })
+    };
+
+    sendEmail(
+        receiverEmail,
+        mailBody.subject,
+        mailBody.content,
+        senderEmail,
+        senderPassword,
+        ccPersons
+    );
+
+
+
+    return savedOrder;
 }
 
-const getOrders = async (omsOrderId?: string) => {
+const getOrders = async (page: number, pageSize: number, omsOrderId: string) => {
 
 
     const filter = omsOrderId
-        ? { omsOrderId: { $regex: `^${omsOrderId}`, $options: 'i' } }
+        ? { omsOrderId: { $regex: `${omsOrderId}`, $options: 'i' } }
         : {};
-    const orders = await orderRepository.getOrders(filter);
+    const skip = (page - 1) * pageSize;
+    const limit = pageSize
+    const orders = await orderRepository.getOrders(skip, limit, filter);
     if (omsOrderId && (!orders && orders.length === 0)) {
         throw new AppError(ERROR_CODES.REQUEST_DID_NOT_MATCH, OrderErrors.NOT_FOUND);
     }
+
     return orders;
 
 }

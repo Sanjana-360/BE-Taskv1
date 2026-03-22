@@ -1,5 +1,5 @@
 export const orderConfirmedEmailTemplate = (data) => {
-    const { omsOrderId, estimateAmount, expectedDeliveryDate, products } = data
+    const { omsOrderId, estimateAmount, expectedDeliveryDate, products, createdAt } = data
     const totalAmount = products.reduce((sum, product) => {
         return sum + (product.price * product.qty)
     }, 0)
@@ -54,11 +54,12 @@ export const orderConfirmedEmailTemplate = (data) => {
             <h3>New Order Placed - ${omsOrderId}</h3>
             <p>A new order has been placed in the system.</p>
             
-           <hr>
+        
             <p><strong>OMS Order ID:</strong> ${omsOrderId}</p>
             <p>Estimate Amount: ₹${estimateAmount}</p>
             <p>Expected Delivery Date: ${expectedDeliveryDate}</p>
-            <hr>
+            <p>Order Placed Date: ${createdAt}</p>
+
 
             <hr>
             <h4>Products:</h4>

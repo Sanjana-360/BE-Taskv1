@@ -39,27 +39,18 @@ const getOrders = async (req: Request, res: Response, next: NextFunction) => {
 
 
     try {
-        const omsOrderId = req.query.omsOrderId as string;
-        const orders = await orderService.getOrders(omsOrderId);
+        const omsOrderId = (req.query.omsOrderId as string) || "";
+        const page = Number(req.query.page) || 1;
+        const pageSize = Number(req.query.pageSize) || 10;
+
+        const orders = await orderService.getOrders(page, pageSize, omsOrderId);
+
         res.status(200).json({
             data: orders,
             success: true
-        })
+        });
     } catch (error) {
-        console.error(error);
-        if (
-            error.errors &&
-            error.errors.length > 0 &&
-            !(error.original && error.original.code)
-        ) {
-            throw new AppError(ERROR_CODES.BAD_REQUEST, error.errors[0].message);
-        } else {
-            if (error instanceof AppError) {
-                throw error;
-            }
-            handleGeneralError(error);
-        }
-        next(error);
+        throw new AppError(ERROR_CODES.BAD_REQUEST, 'Internal server error')
     }
 
 }

@@ -1,7 +1,4 @@
 import nodemailer, { Transporter, SendMailOptions } from 'nodemailer';
-import { AppError } from './middlewares/errors/error';
-import { ERROR_CODES } from './middlewares/errors/error.constants';
-import { SelectParameters$ } from '@aws-sdk/client-s3';
 
 export async function sendEmail(
     email: string,
@@ -41,15 +38,12 @@ export async function sendEmail(
         } catch (error) {
             if (attempts == MAX_RETRIES) {
                 console.log(`Email could not be sent after ${attempts} attempts`)
-                throw new AppError(ERROR_CODES.INTERNAL_SERVER_ERROR, 'Order Confirmation Email could not be sent');
+                console.log(error)
 
             }
 
             const delay = attempts * 2000;
             await sleep(delay);
         }
-
-
-
     }
 }
